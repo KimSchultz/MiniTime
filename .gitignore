@@ -1,3 +1,5 @@
 /NovaMiniTime/bin/*
 /NovaMiniTime/obj/*
 /packages/*
+/.vs/*
+/NovaMiniTime/NovaMiniTime.csproj.user
