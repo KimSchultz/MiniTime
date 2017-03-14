@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SharePoint.Client;
 using System.Configuration;
+using System.Globalization;
 using System.IO;
 
 namespace NovaMiniTime
@@ -42,10 +43,14 @@ namespace NovaMiniTime
                 var ht = HoursToday();
 
                 Console.WriteLine("How many hours have you worked today?");
+                Console.WriteLine("From: " + ht.StartTime);
+                Console.WriteLine("To: " + ht.EndTime);
                 var hoursToday = ConsoleReadLineWithDefault(ht.Hours);
                 if (hoursToday != ht.Hours)
                 {
-                    ht.EndTime = ht.StartTime.AddHours(double.Parse(hoursToday));
+                    hoursToday= hoursToday.Replace(",", ".");
+                    ht.EndTime = ht.StartTime.AddHours(double.Parse(hoursToday, CultureInfo.GetCultureInfo("en-US")));
+                    Console.WriteLine("New To: " + ht.EndTime);
                 }
                 Console.WriteLine("Which project id have you worked on?");
                 var projectId = ConsoleReadLineWithDefault(((FieldLookupValue)collListItem.FirstOrDefault()["Project_x0020__x002d__x0020_Cust0"]).LookupId.ToString());
