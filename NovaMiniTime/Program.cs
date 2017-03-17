@@ -20,7 +20,7 @@ namespace NovaMiniTime
             var siteUrl = ConfigurationManager.AppSettings["site"];
             using (var context = new ClientContext(siteUrl))
             {
-            
+
 
 
 
@@ -31,11 +31,23 @@ namespace NovaMiniTime
                 context.Credentials = new SharePointOnlineCredentials(ConfigurationManager.AppSettings["username"], passWord);
                 List targetList = site.Lists.GetByTitle(ConfigurationManager.AppSettings["list"]);
                 CamlQuery query = new CamlQuery();
-                query.ViewXml = @"<View><Query><Where><And><Geq><FieldRef Name='Date' /><Value IncludeTimeValue='TRUE' Type='DateTime'>" + DateTime.Now.AddDays(-100).ToString("yyyy-MM-ddTHH:mm:ssZ") + "</Value></Geq><Leq><FieldRef Name='Date' /><Value IncludeTimeValue='TRUE' Type='DateTime'>" + DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ssZ") + "</Value></Leq></And></Where></Query><RowLimit>10</RowLimit></View>";
+                query.ViewXml = @"<View><Query><OrderBy><FieldRef Name='Date' Ascending='false'/></OrderBy><Where><And><Geq><FieldRef Name='Date' /><Value IncludeTimeValue='TRUE' Type='DateTime'>" + DateTime.Now.AddDays(-100).ToString("yyyy-MM-ddTHH:mm:ssZ") + "</Value></Geq><Leq><FieldRef Name='Date' /><Value IncludeTimeValue='TRUE' Type='DateTime'>" + DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ssZ") + "</Value></Leq></And></Where></Query><RowLimit>50</RowLimit></View>";
                 ListItemCollection collListItem = targetList.GetItems(query);
 
                 context.Load(collListItem);
                 context.ExecuteQuery();
+                foreach (var v in collListItem.Reverse())
+                {
+                    Console.WriteLine(((FieldLookupValue)v["Project_x0020__x002d__x0020_Cust0"]).LookupValue + " --- Date:" + v["Date"] + " --- Hours: " + v["Hours"]);
+                }
+                var gbm = collListItem.GroupBy(v => DateTime.Parse(v["Date"].ToString()).Month);
+                var cmg = gbm.FirstOrDefault(v => v.Key == DateTime.Now.Month);
+                Console.WriteLine("Hours this month: " + cmg.Sum(x => (double)x["Hours"]));
+                Console.WriteLine("How many +- hours this month: " + (cmg.Sum(x => (double)x["Hours"]) - cmg.GroupBy(c => DateTime.Parse(c["Date"].ToString()).Date).Count() * 8));
+                var gbw = collListItem.GroupBy(v => DateTime.Parse(v["Date"].ToString()).AddDays(-(int)DateTime.Parse(v["Date"].ToString()).DayOfWeek + 1).Date);
+                var cwg = gbw.FirstOrDefault(x => x.Key == DateTime.Now.AddDays(-(int)DateTime.Now.DayOfWeek + 1).Date);
+                Console.WriteLine("Hours this week: " + cwg.Sum(x => (double)x["Hours"]));
+                Console.WriteLine("How many +- hours: " + (cwg.Sum(x => (double)x["Hours"]) - cwg.GroupBy(c => DateTime.Parse(c["Date"].ToString()).Date).Count() * 8));
                 foreach (var targetListItem in collListItem.GroupBy(x => ((FieldLookupValue)x["Project_x0020__x002d__x0020_Cust0"]).LookupId))
                 {
                     Console.WriteLine(((FieldLookupValue)targetListItem.FirstOrDefault()["Project_x0020__x002d__x0020_Cust0"]).LookupValue + " = " + ((FieldLookupValue)targetListItem.FirstOrDefault()["Project_x0020__x002d__x0020_Cust0"]).LookupId);
@@ -48,7 +60,7 @@ namespace NovaMiniTime
                 var hoursToday = ConsoleReadLineWithDefault(ht.Hours);
                 if (hoursToday != ht.Hours)
                 {
-                    hoursToday= hoursToday.Replace(",", ".");
+                    hoursToday = hoursToday.Replace(",", ".");
                     ht.EndTime = ht.StartTime.AddHours(double.Parse(hoursToday, CultureInfo.GetCultureInfo("en-US")));
                     Console.WriteLine("New To: " + ht.EndTime);
                 }
@@ -101,8 +113,8 @@ namespace NovaMiniTime
                 if (CurrentEntry.InstanceId == 30 && CurrentEntry.TimeGenerated.Date == DateTime.Today)
                 {
                     var whhours =
-                        Math.Round((DateTime.Now - CurrentEntry.TimeGenerated).TotalHours*2,
-                            MidpointRounding.AwayFromZero)/2;
+                        Math.Round((DateTime.Now - CurrentEntry.TimeGenerated).TotalHours * 2,
+                            MidpointRounding.AwayFromZero) / 2;
                     wh.Hours = whhours.ToString();
                     wh.StartTime = RoundToNearest(CurrentEntry.TimeGenerated, TimeSpan.FromMinutes(15));
                     wh.EndTime = wh.StartTime.AddHours(whhours);
