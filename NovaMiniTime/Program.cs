@@ -20,10 +20,6 @@ namespace NovaMiniTime
             var siteUrl = ConfigurationManager.AppSettings["site"];
             using (var context = new ClientContext(siteUrl))
             {
-
-
-
-
                 Web site = context.Web;
                 var pwd = ConfigurationManager.AppSettings["password"];
                 SecureString passWord = new SecureString();
@@ -42,15 +38,15 @@ namespace NovaMiniTime
                 }
                 var gbm = collListItem.GroupBy(v => DateTime.Parse(v["Date"].ToString()).Month);
                 var cmg = gbm.FirstOrDefault(v => v.Key == DateTime.Now.Month);
-                Console.WriteLine("Hours this month: " + cmg.Sum(x => (double)x["Hours"]));
-                Console.WriteLine("How many +- hours this month: " + (cmg.Sum(x => (double)x["Hours"]) - cmg.GroupBy(c => DateTime.Parse(c["Date"].ToString()).Date).Count() * 8));
+                Console.WriteLine("Hours this month: " + cmg?.Sum(x => (double)x["Hours"]));
+                Console.WriteLine("How many +- hours this month: " + (cmg?.Sum(x => (double)x["Hours"]) - cmg?.GroupBy(c => DateTime.Parse(c["Date"].ToString()).Date).Count() * 8));
                 var gbw = collListItem.GroupBy(v => DateTime.Parse(v["Date"].ToString()).AddDays(-(int)DateTime.Parse(v["Date"].ToString()).DayOfWeek + 1).Date);
                 var cwg = gbw.FirstOrDefault(x => x.Key == DateTime.Now.AddDays(-(int)DateTime.Now.DayOfWeek + 1).Date);
-                Console.WriteLine("Hours this week: " + cwg.Sum(x => (double)x["Hours"]));
-                Console.WriteLine("How many +- hours: " + (cwg.Sum(x => (double)x["Hours"]) - cwg.GroupBy(c => DateTime.Parse(c["Date"].ToString()).Date).Count() * 8));
+                Console.WriteLine("Hours this week: " + cwg?.Sum(x => (double)x["Hours"]));
+                Console.WriteLine("How many +- hours: " + (cwg?.Sum(x => (double)x["Hours"]) - cwg?.GroupBy(c => DateTime.Parse(c["Date"].ToString()).Date).Count() * 8));
                 foreach (var targetListItem in collListItem.GroupBy(x => ((FieldLookupValue)x["Project_x0020__x002d__x0020_Cust0"]).LookupId))
                 {
-                    Console.WriteLine(((FieldLookupValue)targetListItem.FirstOrDefault()["Project_x0020__x002d__x0020_Cust0"]).LookupValue + " = " + ((FieldLookupValue)targetListItem.FirstOrDefault()["Project_x0020__x002d__x0020_Cust0"]).LookupId);
+                    Console.WriteLine(((FieldLookupValue)targetListItem?.FirstOrDefault()?["Project_x0020__x002d__x0020_Cust0"])?.LookupValue + " = " + ((FieldLookupValue)targetListItem?.FirstOrDefault()?["Project_x0020__x002d__x0020_Cust0"])?.LookupId);
                 }
                 var ht = HoursToday();
 
@@ -65,7 +61,7 @@ namespace NovaMiniTime
                     Console.WriteLine("New To: " + ht.EndTime);
                 }
                 Console.WriteLine("Which project id have you worked on?");
-                var projectId = ConsoleReadLineWithDefault(((FieldLookupValue)collListItem.FirstOrDefault()["Project_x0020__x002d__x0020_Cust0"]).LookupId.ToString());
+                var projectId = ConsoleReadLineWithDefault(((FieldLookupValue)collListItem?.FirstOrDefault()?["Project_x0020__x002d__x0020_Cust0"])?.LookupId.ToString());
                 Console.WriteLine("Write a comment for the time registration?");
                 var comment = Console.ReadLine();
 
@@ -77,7 +73,7 @@ namespace NovaMiniTime
                 newItem["Comments"] = comment;
                 //newItem["From"] = ht.StartTime.ToString("MM-dd-yyyy HH:mm"); Time Format is weird, maybe American
                 //newItem["To"] = ht.EndTime.ToString("MM-dd-yyyy HH:mm");
-                newItem["Person2"] = ((FieldLookupValue)collListItem.FirstOrDefault()["Person2"]).LookupId.ToString();
+                newItem["Person2"] = ((FieldLookupValue)collListItem?.FirstOrDefault()?["Person2"])?.LookupId.ToString();
                 newItem.Update();
 
                 context.ExecuteQuery();
