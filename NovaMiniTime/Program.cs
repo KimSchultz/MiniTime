@@ -27,7 +27,7 @@ namespace NovaMiniTime
                 context.Credentials = new SharePointOnlineCredentials(ConfigurationManager.AppSettings["username"], passWord);
                 List targetList = site.Lists.GetByTitle(ConfigurationManager.AppSettings["list"]);
                 CamlQuery query = new CamlQuery();
-                query.ViewXml = @"<View><Query><OrderBy><FieldRef Name='Date' Ascending='false'/></OrderBy><Where><And><Geq><FieldRef Name='Date' /><Value IncludeTimeValue='TRUE' Type='DateTime'>" + DateTime.Now.AddDays(-100).ToString("yyyy-MM-ddTHH:mm:ssZ") + "</Value></Geq><Leq><FieldRef Name='Date' /><Value IncludeTimeValue='TRUE' Type='DateTime'>" + DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ssZ") + "</Value></Leq></And></Where></Query><RowLimit>50</RowLimit></View>";
+                query.ViewXml = @"<View><Query><OrderBy><FieldRef Name='Date' Ascending='false'/></OrderBy><Where><And><Geq><FieldRef Name='Date' /><Value IncludeTimeValue='TRUE' Type='DateTime'>" + new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).ToString("yyyy-MM-ddTHH:mm:ssZ") + "</Value></Geq><Leq><FieldRef Name='Date' /><Value IncludeTimeValue='TRUE' Type='DateTime'>" + DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ssZ") + "</Value></Leq></And></Where></Query><RowLimit>500</RowLimit></View>";
                 ListItemCollection collListItem = targetList.GetItems(query);
 
                 context.Load(collListItem);
@@ -36,6 +36,8 @@ namespace NovaMiniTime
                 {
                     Console.WriteLine(((FieldLookupValue)v["Project_x0020__x002d__x0020_Cust0"]).LookupValue + " --- Date:" + v["Date"] + " --- Hours: " + v["Hours"]);
                 }
+                Console.WriteLine("Hours this year: " + collListItem?.Sum(x => (double)x["Hours"]));
+                Console.WriteLine("How many +- hours this year: " + (collListItem?.Sum(x => (double)x["Hours"]) - collListItem?.GroupBy(c => DateTime.Parse(c["Date"].ToString()).Date).Count() * 8));
                 var gbm = collListItem.GroupBy(v => DateTime.Parse(v["Date"].ToString()).Month);
                 var cmg = gbm.FirstOrDefault(v => v.Key == DateTime.Now.Month);
                 Console.WriteLine("Hours this month: " + cmg?.Sum(x => (double)x["Hours"]));
@@ -67,7 +69,7 @@ namespace NovaMiniTime
 
                 ListItemCreationInformation itemCreateInfo = new ListItemCreationInformation();
                 ListItem newItem = targetList.AddItem(itemCreateInfo);
-                newItem["Date"] = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ssZ");
+                newItem["Date"] = new DateTime(DateTime.Now.Year,DateTime.Now.Month,DateTime.Now.Day).ToString("yyyy-MM-ddTHH:mm:ssZ");
                 newItem["Hours"] = hoursToday.Replace(",", ".");
                 newItem["Project_x0020__x002d__x0020_Cust0"] = projectId;
                 newItem["Comments"] = comment;
