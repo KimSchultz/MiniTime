@@ -20,6 +20,7 @@ namespace NovaMiniTime
             var siteUrl = ConfigurationManager.AppSettings["site"];
             using (var context = new ClientContext(siteUrl))
             {
+                
                 Web site = context.Web;
                 var pwd = ConfigurationManager.AppSettings["password"];
                 SecureString passWord = new SecureString();
@@ -69,7 +70,12 @@ namespace NovaMiniTime
 
                 ListItemCreationInformation itemCreateInfo = new ListItemCreationInformation();
                 ListItem newItem = targetList.AddItem(itemCreateInfo);
-                newItem["Date"] = new DateTime(DateTime.Now.Year,DateTime.Now.Month,DateTime.Now.Day,7,0,0,DateTimeKind.Utc).ToString("yyyy-MM-ddTHH:mm:ssZ");
+                var usaHours = 8;
+                if (TimeZoneInfo.Local.IsDaylightSavingTime(DateTime.Now))
+                {
+                    usaHours = 7;
+                }
+                newItem["Date"] = new DateTime(DateTime.Now.Year,DateTime.Now.Month,DateTime.Now.Day, usaHours, 0,0,DateTimeKind.Utc).ToString("yyyy-MM-ddTHH:mm:ssZ");
                 newItem["Hours"] = hoursToday.Replace(",", ".");
                 newItem["Project_x0020__x002d__x0020_Cust0"] = projectId;
                 newItem["Comments"] = comment;
