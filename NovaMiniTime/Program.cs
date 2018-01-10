@@ -28,7 +28,7 @@ namespace NovaMiniTime
                 context.Credentials = new SharePointOnlineCredentials(ConfigurationManager.AppSettings["username"], passWord);
                 List targetList = site.Lists.GetByTitle(ConfigurationManager.AppSettings["list"]);
                 CamlQuery query = new CamlQuery();
-                query.ViewXml = @"<View><Query><OrderBy><FieldRef Name='Date' Ascending='false'/></OrderBy><Where><And><Geq><FieldRef Name='Date' /><Value IncludeTimeValue='TRUE' Type='DateTime'>" + new DateTime(DateTime.Now.Year, DateTime.Now.AddMonths(-1).Month, 1).ToString("yyyy-MM-ddTHH:mm:ssZ") + "</Value></Geq><Leq><FieldRef Name='Date' /><Value IncludeTimeValue='TRUE' Type='DateTime'>" + DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ssZ") + "</Value></Leq></And></Where></Query><RowLimit>500</RowLimit></View>";
+                query.ViewXml = @"<View><Query><OrderBy><FieldRef Name='Date' Ascending='false'/></OrderBy><Where><And><Geq><FieldRef Name='Date' /><Value IncludeTimeValue='TRUE' Type='DateTime'>" + new DateTime(DateTime.Now.AddMonths(-1).Year, DateTime.Now.AddMonths(-1).Month, 1).ToString("yyyy-MM-ddTHH:mm:ssZ") + "</Value></Geq><Leq><FieldRef Name='Date' /><Value IncludeTimeValue='TRUE' Type='DateTime'>" + DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ssZ") + "</Value></Leq></And></Where></Query><RowLimit>500</RowLimit></View>";
                 ListItemCollection collListItem = targetList.GetItems(query);
 
                 context.Load(collListItem);
